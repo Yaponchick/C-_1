@@ -1,5 +1,7 @@
 ﻿using System;
 using System.ComponentModel.Design;
+using System.Xml.Linq;
+using static System.Runtime.InteropServices.JavaScript.JSType;
 
 string[] students = new string[10];
 students[0] = "Alisa";
@@ -24,18 +26,19 @@ while (true)
     {
 
         case "1":
-            AddStudent();
+            Console.Write("Введите имя студента: ");
+            AddStudAndGrup(students, "студент");
             break;
 
         case "2":
-            WriteLine();
+            UniversalWrite(students, "студенты");
             break;
-
         case "3":
-            AddGroup();
+            Console.Write("Введите курс:");
+            AddStudAndGrup(groups, "курс") ;
             break;
         case "4":
-            WriteGroup();
+            UniversalWrite(groups, "группы");
             break;
         case "5":
             WriteStudent();
@@ -91,96 +94,46 @@ void ShowMenu(){
     Console.Write("Выбрать опциию > ");
 }
 
-void AddStudent()
+string[] UniversalWrite(string[] array, string entityType)
 {
-    Console.Write("Введите имя студента: ");
-    string name = Console.ReadLine();
+    Console.WriteLine($"{entityType}: ");
 
-    for (int i = 0; i < students.Length; i++)
+    foreach (string Univer in array)
     {
-        if (students[i] == null)
-        {
-            students[i] = name;
-            Console.WriteLine("Добавлен(а): " + name);
-            break;
-
-        }
+        if (Univer != null)
+            Console.WriteLine(Univer);
     }
+    return array;
 }
 
-void WriteLine()
+string[] AddStudAndGrup(string[] array, string entityType)
 {
-    Console.WriteLine("Студенты:");
-    foreach (string student in students)
-    {
-        if (student != null)
-            Console.WriteLine(student);
-    }
-}
-
-void AddGroup()
-{
-    Console.Write("Введите курс:");
     string gr = Console.ReadLine();
 
-    for (int i = 0; i < groups.Length; i++)
-        if (groups[i] == null)
+    for (int i = 0; i < array.Length; i++)
+        if (array[i] == null)
         {
-            groups[i] = gr;
-            Console.WriteLine("Добавлен курс: " + gr);
+            array[i] = gr;
             break;
         }
-}
 
-void WriteGroup()
-{
-    Console.WriteLine("Курсы:");
-    foreach (string group in groups)
-    {
-        if (group != null)
-            Console.WriteLine(group);
-    }
+    Console.WriteLine($"Доблен(а) {entityType}: {gr} ");
+
+
+    return array;
 }
 
 void WriteStudent()
 {
-    Console.WriteLine("Студенты:");
-    foreach (string student in students)
-    {
-        if (student != null)
-            Console.WriteLine(student);
+    int studentID = GetValidId(students, "Студента");
+    if (studentID == -1) return;
 
-    }
     Console.WriteLine("");
+    int GroupID = GetValidId(groups, "Курса");
+    if (GroupID == -1) return;
 
-    Console.Write("Введите студента:");
-    int s = int.Parse(Console.ReadLine());
-    s -= 1;
-    Console.WriteLine("");
-    Console.WriteLine("Вы выбрали студента: " + students[s]);
-    Console.WriteLine("");
-
-    Console.WriteLine("Группы:");
-    foreach (string group in groups)
-    {
-        if (group != null)
-            Console.WriteLine(group);
-
-    }
-
-    Console.Write("Введите группу:");
-    int g = int.Parse(Console.ReadLine());
-    Console.WriteLine(g);
-    g -= 1;
-    Console.WriteLine("");
-    Console.WriteLine("Вы выбрали группу: " + groups[g]);
-    Console.WriteLine("");
-
-    if (students[s] != null && groups[g] != null)
-    {
-        groupAndStudents[s, g] = $"{students[s]} {groups[g]}";
-        Console.WriteLine($"Студент {students[s]} записан на курс {groups[g]} ");
-    }
+    groupAndStudents[studentID, GroupID] = $"{students[studentID]} {groups[GroupID]}";
+    Console.WriteLine($"Студент {students[studentID]} записан на курс {groups[GroupID]} ");
 }
 
 void StudentsGroup()
@@ -196,59 +149,42 @@ void StudentsGroup()
 
 void RemoveStudents()
 {
-    Console.WriteLine("Кого отчисляем?");
-    foreach (string student in students)
-    {
-        if (student != null)
-            Console.WriteLine(student);
-    }
-    Console.Write("Введите студента:");
-    int st = int.Parse(Console.ReadLine());
 
-    st -= 1;
-    Console.WriteLine("Отчислили: " + students[st]);
+    students = RemoveSearch(students, "студента");
 
-    string[] newStudents = new string[students.Length - 1];
-
-    for (int i = 0, j = 0; i < students.Length; i++)
-    {
-        if (i != st)
-        {
-            newStudents[j] = students[i];
-            j++;
-        }
-    }
-
-    students = newStudents;
 }
 
 void RemoveGroups()
 {
-    Console.WriteLine("Какой курс удаляем?");
-    foreach (string group in groups)
+
+    groups = RemoveSearch(groups,"группы");
+
+}
+// Удаление студентов и курсов
+string[] RemoveSearch(string[] array, string entityType)
+{
+    ShowList(array, entityType);
+
+
+    Console.Write($"Введите номер {entityType}: ");
+
+    int st = int.Parse(Console.ReadLine());
+
+    st -= 1;
+    Console.WriteLine("Удален: " + array[st]);
+
+    string[] newArray = new string[array.Length - 1];
+
+    for (int i = 0, j = 0; i < array.Length; i++)
     {
-        if (group != null)
-            Console.WriteLine(group);
-    }
-    Console.Write("Введите группу:");
-    int grp = int.Parse(Console.ReadLine());
-
-    grp -= 1;
-
-    Console.WriteLine("Удалили: " + groups[grp]);
-
-    string[] newGroups = new string[groups.Length - 1];
-
-    for (int i = 0, j = 0; i < groups.Length; i++)
-    {
-        if (i != grp)
+        if (i != st)
         {
-            newGroups[j] = groups[i];
+            newArray[j] = array[i];
             j++;
         }
     }
+    return newArray;
 
-    groups = newGroups;
 }
 
 void LeaveStudGroup()
@@ -299,9 +235,12 @@ void SearchStudent()
                 {
                     if (groups != null)
                     {
-                        Console.Write(groupAndStudents[i, j]);
+                        Console.WriteLine(groupAndStudents[i, j]);
+                        break;
                     }
+                    break;
                 }
+                break;
             }
         }
         else
@@ -309,5 +248,32 @@ void SearchStudent()
             Console.WriteLine("Нет совпадений");
         }
         break;
+    }
+}
+
+int GetValidId(string[] array,string entityType) 
+{
+    ShowList(array, entityType);
+
+    Console.Write($"Выберете ID {entityType}:");
+    
+    if (int.TryParse(Console.ReadLine(), out int id) && id>=0 && id<array.Length && array[id] != null)
+    {
+        return id;
+    }
+    Console.WriteLine("Ошибка: id некорректно");
+    return -1;
+}
+
+void ShowList(string[] array,string entityType)
+{
+    Console.WriteLine($"Список {entityType}: ");
+    foreach(string showlist in array)
+    {
+        if (showlist != null)
+        {
+            Console.WriteLine($"{showlist}");
+
+        }
     }
 }
